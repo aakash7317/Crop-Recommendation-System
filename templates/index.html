@@ -1,113 +1,566 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Crop Recommendation System</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-KK94CHFLLe+nY2dmCWGMq91rCGa5gtU4mk92HdvYe+M/SXH301p5ILy+dN9+nJOZ" crossorigin="anonymous">
-  </head>
-  <style>
-		h1 {
-			color: rgb(0, 0, 0);
-			text-align: center;
-		}
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>CropSense AI — Smart Crop Recommendation</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=Outfit:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --soil:#1a1208;
+  --soil2:#241a0e;
+  --earth:#2d2010;
+  --bark:#3d2e14;
+  --moss:#2d4a1e;
+  --leaf:#3d6b28;
+  --lime:#7cb842;
+  --lime2:#a8d858;
+  --gold:#e8b84b;
+  --gold2:#f5d278;
+  --cream:#f5ede0;
+  --text:#f0e8d8;
+  --text2:#b8a888;
+  --text3:#7a6848;
+  --font:'Outfit',sans-serif;
+  --display:'Playfair Display',serif;
+  --mono:'JetBrains Mono',monospace;
+  --r:12px;
+}
 
-		.warning {
-			color: red;
-			font-weight: bold;
-			text-align: center;
-		}
-		.card{
-		margin-left:410px;
-		margin-top: 20px;
-		display: flex;
-		flex-direction: row;
-		align-items: center;
-		color: rgb(241, 239, 240);
-		}
-		.container{
-		background:#fffbfe;
-		font-weight: bold;
-		padding-bottom:10px;
-		border-radius: 15px;
-		}
-	</style>
+html{scroll-behavior:smooth}
 
+body{
+  background:var(--soil);
+  color:var(--text);
+  font-family:var(--font);
+  min-height:100vh;
+  position:relative;
+  overflow-x:hidden;
+}
 
+/* ── Organic background ── */
+body::before{
+  content:'';
+  position:fixed;inset:0;
+  background:
+    radial-gradient(ellipse 80% 60% at 10% 20%, rgba(45,74,30,.5) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 80% at 90% 80%, rgba(45,32,16,.8) 0%, transparent 60%),
+    radial-gradient(ellipse 40% 40% at 50% 50%, rgba(36,26,14,.6) 0%, transparent 70%);
+  pointer-events:none;z-index:0;
+}
 
+/* ── Particle dots (soil texture) ── */
+body::after{
+  content:'';
+  position:fixed;inset:0;
+  background-image:radial-gradient(rgba(232,184,75,.06) 1px,transparent 1px);
+  background-size:32px 32px;
+  pointer-events:none;z-index:0;
+}
 
-  <body style="background:#BCBBB8">
-  <!--=======================navbar=====================================================-->
-<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-  <div class="container-fluid">
-    <a class="navbar-brand" href="/">Crop Recommendation System Using Machine Learning</a>
+.page{position:relative;z-index:1;min-height:100vh;display:flex;flex-direction:column}
+
+/* ══════════ HEADER ══════════ */
+header{
+  padding:24px 40px;
+  display:flex;align-items:center;justify-content:space-between;
+  border-bottom:1px solid rgba(232,184,75,.12);
+  background:rgba(26,18,8,.6);
+  backdrop-filter:blur(12px);
+  position:sticky;top:0;z-index:100;
+}
+.logo{display:flex;align-items:center;gap:14px}
+.logo-icon{
+  width:48px;height:48px;border-radius:12px;
+  background:linear-gradient(135deg,var(--moss),var(--leaf));
+  border:1px solid rgba(124,184,66,.3);
+  display:grid;place-items:center;font-size:24px;
+  box-shadow:0 0 20px rgba(124,184,66,.2);
+}
+.logo-text h1{
+  font-family:var(--display);font-size:20px;font-weight:700;
+  background:linear-gradient(135deg,var(--cream),var(--gold));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+}
+.logo-text span{font-size:11px;color:var(--text3);font-family:var(--mono);letter-spacing:1px}
+
+.header-badges{display:flex;gap:8px}
+.hbadge{
+  display:flex;align-items:center;gap:6px;
+  padding:6px 12px;border-radius:99px;
+  font-size:10px;font-family:var(--mono);letter-spacing:1px;font-weight:500;
+}
+.hbadge-green{
+  background:rgba(61,107,40,.3);border:1px solid rgba(124,184,66,.25);color:var(--lime);
+}
+.hbadge-gold{
+  background:rgba(232,184,75,.1);border:1px solid rgba(232,184,75,.25);color:var(--gold);
+}
+.hbadge .dot{
+  width:6px;height:6px;border-radius:50%;background:currentColor;
+  box-shadow:0 0 6px currentColor;animation:pulse 2s infinite;
+}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+
+/* ══════════ HERO ══════════ */
+.hero{
+  text-align:center;padding:64px 40px 48px;
+  position:relative;
+}
+.hero-eyebrow{
+  display:inline-flex;align-items:center;gap:8px;
+  background:rgba(124,184,66,.08);border:1px solid rgba(124,184,66,.2);
+  border-radius:99px;padding:6px 16px;
+  font-size:11px;font-family:var(--mono);color:var(--lime);letter-spacing:2px;
+  margin-bottom:24px;
+}
+.hero h2{
+  font-family:var(--display);font-size:clamp(36px,6vw,64px);font-weight:900;
+  line-height:1.1;letter-spacing:-1px;margin-bottom:16px;
+}
+.hero h2 em{
+  font-style:normal;
+  background:linear-gradient(135deg,var(--lime) 0%,var(--gold) 100%);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+}
+.hero p{
+  font-size:16px;color:var(--text2);max-width:520px;margin:0 auto 16px;
+  font-weight:300;line-height:1.7;
+}
+
+/* ══════════ HOW IT WORKS ══════════ */
+.how-strip{
+  display:flex;align-items:center;justify-content:center;gap:0;
+  max-width:680px;margin:0 auto 48px;flex-wrap:wrap;gap:4px;
+}
+.how-step{
+  display:flex;align-items:center;gap:10px;
+  background:rgba(45,32,16,.6);border:1px solid rgba(232,184,75,.1);
+  border-radius:99px;padding:8px 16px;
+  font-size:12px;color:var(--text2);
+}
+.how-step .num{
+  width:22px;height:22px;border-radius:50%;
+  background:linear-gradient(135deg,var(--lime),var(--gold));
+  color:#000;font-size:10px;font-weight:700;
+  display:grid;place-items:center;flex-shrink:0;
+}
+.how-arrow{font-size:14px;color:var(--text3);padding:0 4px}
+
+/* ══════════ MAIN CARD ══════════ */
+.main{
+  flex:1;padding:0 40px 64px;
+  display:flex;justify-content:center;
+}
+.card{
+  width:100%;max-width:860px;
+  background:linear-gradient(160deg,rgba(36,26,14,.95) 0%,rgba(26,18,8,.98) 100%);
+  border:1px solid rgba(232,184,75,.15);
+  border-radius:20px;overflow:hidden;
+  box-shadow:0 32px 80px rgba(0,0,0,.6),0 0 0 1px rgba(124,184,66,.05);
+}
+
+.card-header{
+  padding:24px 32px;
+  border-bottom:1px solid rgba(232,184,75,.1);
+  background:rgba(45,46,20,.2);
+  display:flex;align-items:center;gap:16px;
+}
+.card-header-icon{
+  width:44px;height:44px;border-radius:10px;
+  background:linear-gradient(135deg,rgba(61,107,40,.5),rgba(45,74,30,.5));
+  border:1px solid rgba(124,184,66,.2);
+  display:grid;place-items:center;font-size:20px;flex-shrink:0;
+}
+.card-header h3{font-size:17px;font-weight:600;color:var(--cream)}
+.card-header p{font-size:12px;color:var(--text3);margin-top:2px}
+
+.card-body{padding:32px}
+
+/* ── Param groups ── */
+.param-section{margin-bottom:28px}
+.param-section-label{
+  font-size:10px;font-weight:600;letter-spacing:3px;text-transform:uppercase;
+  color:var(--text3);margin-bottom:16px;
+  display:flex;align-items:center;gap:10px;
+}
+.param-section-label::after{content:'';flex:1;height:1px;background:rgba(232,184,75,.1)}
+
+.param-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.param-grid-2{grid-template-columns:repeat(2,1fr)}
+.param-grid-1{grid-template-columns:1fr}
+
+/* ── Input fields ── */
+.field{position:relative}
+.field label{
+  display:flex;align-items:center;gap:6px;
+  font-size:11px;font-weight:600;color:var(--text2);
+  letter-spacing:.5px;text-transform:uppercase;margin-bottom:8px;
+}
+.field label .icon{font-size:13px}
+.field label .unit{
+  margin-left:auto;
+  font-size:9px;font-family:var(--mono);
+  background:rgba(232,184,75,.1);color:var(--gold);
+  padding:2px 6px;border-radius:4px;letter-spacing:1px;
+  text-transform:none;
+}
+
+.field input{
+  width:100%;padding:12px 16px;
+  background:rgba(26,18,8,.7);
+  border:1px solid rgba(232,184,75,.15);
+  border-radius:var(--r);
+  color:var(--cream);font-family:var(--mono);font-size:14px;
+  outline:none;transition:.2s;
+  -moz-appearance:textfield;
+}
+.field input::-webkit-inner-spin-button,
+.field input::-webkit-outer-spin-button{-webkit-appearance:none}
+.field input::placeholder{color:var(--text3);font-size:13px;font-family:var(--font)}
+.field input:focus{
+  border-color:rgba(124,184,66,.5);
+  background:rgba(45,74,30,.15);
+  box-shadow:0 0 0 3px rgba(124,184,66,.08);
+}
+.field input:hover:not(:focus){border-color:rgba(232,184,75,.25)}
+
+/* ── Sliders ── */
+.field .slider-wrap{display:flex;align-items:center;gap:12px}
+.field input[type=range]{
+  -webkit-appearance:none;flex:1;height:4px;
+  background:linear-gradient(90deg,var(--lime) 0%,rgba(232,184,75,.2) 0%);
+  border:none;border-radius:99px;cursor:pointer;padding:0;
+}
+.field input[type=range]::-webkit-slider-thumb{
+  -webkit-appearance:none;width:18px;height:18px;border-radius:50%;
+  background:linear-gradient(135deg,var(--lime),var(--gold));
+  border:2px solid var(--soil);box-shadow:0 0 8px rgba(124,184,66,.4);cursor:pointer;
+}
+.field .slider-val{
+  font-family:var(--mono);font-size:13px;color:var(--lime);
+  background:rgba(124,184,66,.1);border:1px solid rgba(124,184,66,.2);
+  padding:4px 10px;border-radius:6px;min-width:52px;text-align:center;
+}
+
+/* ── Submit ── */
+.submit-row{margin-top:28px;display:flex;align-items:center;gap:16px}
+.btn-submit{
+  flex:1;padding:16px 32px;
+  background:linear-gradient(135deg,var(--moss) 0%,var(--lime) 50%,var(--gold) 100%);
+  background-size:200% 100%;background-position:0% 0%;
+  border:none;border-radius:var(--r);
+  color:#000;font-family:var(--display);font-size:18px;font-weight:700;
+  cursor:pointer;transition:.4s;letter-spacing:.5px;
+  position:relative;overflow:hidden;
+}
+.btn-submit::before{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(135deg,rgba(255,255,255,.1),transparent);
+  opacity:0;transition:.2s;
+}
+.btn-submit:hover{
+  background-position:100% 0%;
+  box-shadow:0 8px 32px rgba(124,184,66,.35),0 0 0 1px rgba(124,184,66,.3);
+  transform:translateY(-2px);
+}
+.btn-submit:hover::before{opacity:1}
+.btn-submit:active{transform:translateY(0)}
+
+.btn-reset{
+  padding:16px 24px;
+  background:transparent;border:1px solid rgba(232,184,75,.2);
+  border-radius:var(--r);color:var(--text2);
+  font-family:var(--font);font-size:14px;font-weight:500;
+  cursor:pointer;transition:.2s;
+}
+.btn-reset:hover{border-color:rgba(232,184,75,.4);color:var(--gold)}
+
+/* ══════════ RESULT ══════════ */
+.result-section{
+  margin:0 32px 32px;
+  border-radius:16px;overflow:hidden;
+  border:1px solid rgba(124,184,66,.3);
+  background:linear-gradient(135deg,rgba(45,74,30,.25) 0%,rgba(61,107,40,.15) 100%);
+  animation:resultIn .5s cubic-bezier(.16,1,.3,1);
+}
+@keyframes resultIn{
+  from{opacity:0;transform:translateY(16px) scale(.98)}
+  to{opacity:1;transform:translateY(0) scale(1)}
+}
+.result-top{
+  padding:20px 24px;
+  background:rgba(45,74,30,.3);
+  border-bottom:1px solid rgba(124,184,66,.2);
+  display:flex;align-items:center;gap:12px;
+}
+.result-top .check{
+  width:36px;height:36px;border-radius:50%;
+  background:linear-gradient(135deg,var(--lime),var(--gold));
+  display:grid;place-items:center;font-size:16px;flex-shrink:0;
+  box-shadow:0 0 16px rgba(124,184,66,.4);
+}
+.result-top h4{font-size:13px;color:var(--lime);font-family:var(--mono);letter-spacing:1px}
+.result-body{padding:20px 24px}
+.result-crop{
+  font-family:var(--display);font-size:clamp(28px,5vw,42px);font-weight:900;
+  background:linear-gradient(135deg,var(--lime2) 0%,var(--gold2) 100%);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+  line-height:1.1;margin-bottom:8px;
+}
+.result-msg{font-size:14px;color:var(--text2);line-height:1.6;font-weight:300}
+.result-tags{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px}
+.rtag{
+  display:flex;align-items:center;gap:6px;
+  padding:6px 12px;border-radius:99px;
+  background:rgba(124,184,66,.1);border:1px solid rgba(124,184,66,.2);
+  font-size:11px;color:var(--lime);font-family:var(--mono);
+}
+
+/* ══════════ CROP EMOJI MAP ══════════ */
+/* used via JS */
+
+/* ══════════ FOOTER ══════════ */
+footer{
+  text-align:center;padding:20px 40px;
+  border-top:1px solid rgba(232,184,75,.08);
+  font-size:11px;color:var(--text3);font-family:var(--mono);
+  background:rgba(26,18,8,.4);
+}
+footer span{color:var(--lime)}
+
+/* ══════════ RESPONSIVE ══════════ */
+@media(max-width:720px){
+  header{padding:16px 20px}
+  .hero{padding:40px 20px 32px}
+  .main{padding:0 16px 48px}
+  .card-body{padding:20px}
+  .param-grid{grid-template-columns:1fr 1fr}
+  .result-section{margin:0 16px 20px}
+  .how-strip{display:none}
+}
+@media(max-width:480px){
+  .param-grid{grid-template-columns:1fr}
+  .header-badges{display:none}
+}
+</style>
+</head>
+<body>
+<div class="page">
+
+<!-- ══ HEADER ══ -->
+<header>
+  <div class="logo">
+    <div class="logo-icon">🌱</div>
+    <div class="logo-text">
+      <h1>CropSense AI</h1>
+      <span>PRECISION AGRICULTURE · ML POWERED</span>
+    </div>
   </div>
-</nav>
+  <div class="header-badges">
+    <div class="hbadge hbadge-green"><span class="dot"></span>MODEL LIVE</div>
+    <div class="hbadge hbadge-gold">22 CROPS</div>
+  </div>
+</header>
 
-<!--==========================================================================================-->
-  <div class="container my-3 mt-3">
-      <h1 class="text-success">Crop Recommendation System<span class="text-success">🌱</span></h1>
+<!-- ══ HERO ══ -->
+<div class="hero">
+  <div class="hero-eyebrow">🧠 Machine Learning · Random Forest · 99.3% Accuracy</div>
+  <h2>What Should You<br><em>Grow Next?</em></h2>
+  <p>Enter your soil and climate parameters. Our AI analyzes 7 key factors to recommend the most profitable crop for your land.</p>
 
-<!--      adding form-->
-      <form action="/predict" method="POST">
-          <div class="row">
-              <div class="col-md-4">
-					<label for="Nitrogen">Nitrogen</label>
-					<input type="number" id="Nitrogen" name="Nitrogen" placeholder="Enter Nitrogen" class="form-control" required step="0">
-				</div>
-               <div class="col-md-4">
-					<label for="Phosporus">Phosphorus</label>
-					<input type="number" id="Phosporus" name="Phosporus" placeholder="Enter Phosphorus" class="form-control" required step="00">
-				</div>
-				<div class="col-md-4">
-					<label for="Potassium">Potassium</label>
-					<input type="number" id="Potassium" name="Potassium" placeholder="Enter Potassium" class="form-control" required step="0">
-				</div>
+  <div class="how-strip">
+    <div class="how-step"><span class="num">1</span> Enter soil data</div>
+    <span class="how-arrow">→</span>
+    <div class="how-step"><span class="num">2</span> Enter climate data</div>
+    <span class="how-arrow">→</span>
+    <div class="how-step"><span class="num">3</span> Get AI recommendation</div>
+  </div>
+</div>
+
+<!-- ══ MAIN CARD ══ -->
+<main class="main">
+  <div class="card">
+    <div class="card-header">
+      <div class="card-header-icon">🔬</div>
+      <div>
+        <h3>Soil & Climate Analysis</h3>
+        <p>Fill in your field parameters — all values are used by the ML model</p>
+      </div>
+    </div>
+
+    <div class="card-body">
+      <form action="/predict" method="POST" id="cropForm">
+
+        <!-- SOIL NUTRIENTS -->
+        <div class="param-section">
+          <div class="param-section-label">🌍 Soil Nutrients</div>
+          <div class="param-grid">
+
+            <div class="field">
+              <label><span class="icon">🟢</span> Nitrogen <span class="unit">mg/kg</span></label>
+              <input type="number" name="Nitrogen" placeholder="e.g. 90" min="0" max="140" step="1" required/>
+            </div>
+
+            <div class="field">
+              <label><span class="icon">🟠</span> Phosphorus <span class="unit">mg/kg</span></label>
+              <input type="number" name="Phosporus" placeholder="e.g. 42" min="5" max="145" step="1" required/>
+            </div>
+
+            <div class="field">
+              <label><span class="icon">🟣</span> Potassium <span class="unit">mg/kg</span></label>
+              <input type="number" name="Potassium" placeholder="e.g. 43" min="5" max="205" step="1" required/>
+            </div>
+
           </div>
+        </div>
 
-          <div class="row mt-4">
-				<div class="col-md-4">
-					<label for="Temperature">Temperature</label>
-					<input type="number" step="0.01" id="Temperature" name="Temperature" placeholder="Enter Temperature in °C" class="form-control" required step="0">
-				</div>
-				<div class="col-md-4">
-					<label for="Humidity">Humidity</label>
-					<input type="number" step="0.01" id="Humidity" name="Humidity" placeholder="Enter Humidity in %" class="form-control" required step="0">
-				</div>
-				<div class="col-md-4">
-					<label for="pH">pH</label>
-					<input type="number" step="0.01" id="pH" name="pH" placeholder="Enter pH value" class="form-control" required step="0">
-				</div>
-			</div>
+        <!-- SOIL PROPERTY -->
+        <div class="param-section">
+          <div class="param-section-label">⚗️ Soil Property</div>
+          <div class="param-grid param-grid-1">
+            <div class="field">
+              <label><span class="icon">🧪</span> pH Level <span class="unit">0 – 14</span></label>
+              <div class="slider-wrap">
+                <input type="range" id="ph-slider" min="0" max="14" step="0.1" value="6.5"
+                  oninput="syncSlider(this,'ph-val','pH')"/>
+                <span class="slider-val" id="ph-val">6.5</span>
+              </div>
+              <input type="hidden" name="pH" id="pH" value="6.5"/>
+            </div>
+          </div>
+        </div>
 
-          <div class="row mt-4">
-				<div class="col-md-4">
-					<label for="Rainfall">Rainfall</label>
-					<input type="number" step="0.01" id="Rainfall" name="Rainfall" placeholder="Enter Rainfall in mm" class="form-control" required>
-				</div>
-			</div>
+        <!-- CLIMATE -->
+        <div class="param-section">
+          <div class="param-section-label">🌤 Climate Conditions</div>
+          <div class="param-grid param-grid-2" style="margin-bottom:16px">
 
+            <div class="field">
+              <label><span class="icon">🌡</span> Temperature <span class="unit">°C</span></label>
+              <input type="number" name="Temperature" placeholder="e.g. 25.5" min="0" max="50" step="0.1" required/>
+            </div>
 
+            <div class="field">
+              <label><span class="icon">💧</span> Humidity <span class="unit">%</span></label>
+              <input type="number" name="Humidity" placeholder="e.g. 80" min="0" max="100" step="0.1" required/>
+            </div>
 
-           <div class="row mt-4">
+          </div>
+          <div class="param-grid param-grid-1">
+            <div class="field">
+              <label><span class="icon">🌧</span> Rainfall <span class="unit">mm</span></label>
+              <div class="slider-wrap">
+                <input type="range" id="rain-slider" min="20" max="300" step="1" value="100"
+                  oninput="syncSlider(this,'rain-val','Rainfall')"/>
+                <span class="slider-val" id="rain-val">100</span>
+              </div>
+              <input type="hidden" name="Rainfall" id="Rainfall" value="100"/>
+            </div>
+          </div>
+        </div>
 
-           <div class="col-md-12 text-center">
-				<button type="submit" class="btn btn-primary btn-lg">Get Recommendation</button>
-			</div>
-			</div>
+        <div class="submit-row">
+          <button type="submit" class="btn-submit">✦ Analyze & Recommend Crop</button>
+          <button type="button" class="btn-reset" onclick="resetForm()">↺ Reset</button>
+        </div>
+
       </form>
+    </div>
 
-       {% if result %}
-		<div class="card bg-dark" style="width: 18rem;">
-		  <img src="{{url_for('static', filename='crop.png')}}" style="width: 70px; height: 70px;" class="card-img-top" alt="...">
-		  <div class="card-body">
-			<h5 class="card-title">Recommend Crop for Cultivation is:</h5>
-			<p class="card-text">{{ result }} </p>
-		  </div>
-		</div>
-	   {% endif %}
+    <!-- RESULT -->
+    {% if result %}
+    <div class="result-section" id="resultBox">
+      <div class="result-top">
+        <div class="check">✓</div>
+        <div>
+          <h4>AI RECOMMENDATION READY</h4>
+          <div style="font-size:11px;color:var(--text3);margin-top:2px;font-family:var(--font)">Based on your soil & climate parameters</div>
+        </div>
+      </div>
+      <div class="result-body">
+        <div class="result-crop" id="cropName">{{ result.split(' is the best')[0] if 'is the best' in result else result }}</div>
+        <div class="result-msg">{{ result }}</div>
+        <div class="result-tags" id="cropTags"></div>
+      </div>
+    </div>
+    {% endif %}
+
   </div>
+</main>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ENjdO4Dr2bkBIFxQpeoTz1HIcje39Wm4jDKdf19U8gI4ddQ3GYNS7NTKfAdVQSZe" crossorigin="anonymous"></script>
-  </body>
+<footer>
+  Powered by <span>Random Forest ML</span> · Trained on 2200 samples · 22 crop varieties · Built with <span>Flask + scikit-learn</span>
+</footer>
+
+</div>
+
+<script>
+// Slider sync
+function syncSlider(slider, valId, hiddenId) {
+  document.getElementById(valId).textContent = slider.value;
+  document.getElementById(hiddenId).value    = slider.value;
+  const pct = (slider.value - slider.min) / (slider.max - slider.min) * 100;
+  slider.style.backgroundSize = pct + '% 100%';
+}
+
+// Init slider fills
+document.querySelectorAll('input[type=range]').forEach(r => {
+  const pct = (r.value - r.min) / (r.max - r.min) * 100;
+  r.style.backgroundSize = pct + '% 100%';
+});
+
+function resetForm() {
+  document.getElementById('cropForm').reset();
+  document.querySelectorAll('input[type=range]').forEach(r => {
+    r.style.backgroundSize = '50% 100%';
+  });
+  document.getElementById('ph-val').textContent   = '6.5';
+  document.getElementById('rain-val').textContent = '100';
+}
+
+// Crop tags
+const cropInfo = {
+  'Rice':        ['🌾 Paddy crop','💧 High water need','🌡 Tropical'],
+  'Maize':       ['🌽 Cereal crop','☀️ Full sun','💨 Moderate water'],
+  'Jute':        ['🌿 Fiber crop','💧 Moist soil','🌧 High rainfall'],
+  'Cotton':      ['🤍 Cash crop','☀️ Warm climate','🏜 Dry spells ok'],
+  'Coconut':     ['🥥 Tree crop','🌴 Coastal','💧 High humidity'],
+  'Papaya':      ['🍈 Fruit tree','🌡 Warm','💧 Moderate water'],
+  'Orange':      ['🍊 Citrus','🌤 Subtropical','🌿 Well-drained'],
+  'Apple':       ['🍎 Temperate','❄️ Cool climate','🌸 Seasonal'],
+  'Muskmelon':   ['🍈 Summer fruit','☀️ Hot & dry','💧 Low water'],
+  'Watermelon':  ['🍉 Summer crop','🌡 High temp','☀️ Long sunshine'],
+  'Grapes':      ['🍇 Vine crop','🌤 Warm days','❄️ Cool nights'],
+  'Mango':       ['🥭 King of fruits','🌡 Tropical','💧 Seasonal water'],
+  'Banana':      ['🍌 Year-round','💧 High moisture','🌡 Warm temp'],
+  'Pomegranate': ['🍎 Hardy fruit','🏜 Drought tolerant','☀️ Sunny'],
+  'Lentil':      ['🌱 Pulse crop','❄️ Cool season','🌿 Low water'],
+  'Blackgram':   ['🫘 Pulse crop','🌧 Kharif season','💧 Moderate'],
+  'Mungbean':    ['🫘 Short duration','🌡 Warm','💧 Low water'],
+  'Mothbeans':   ['🌿 Drought resistant','🏜 Arid zones','☀️ High temp'],
+  'Pigeonpeas':  ['🫘 Long duration','🌧 Kharif','🌿 Mixed cropping'],
+  'Kidneybeans': ['🫘 Legume','❄️ Cool temp','🌿 Rich soil'],
+  'Chickpea':    ['🫘 Rabi crop','❄️ Cool & dry','🌿 Low humidity'],
+  'Coffee':      ['☕ Plantation','🌧 High rainfall','🌿 Shade grown'],
+};
+
+// Add tags if result visible
+const cropEl = document.getElementById('cropName');
+if (cropEl) {
+  const name = cropEl.textContent.trim();
+  const tags = cropInfo[name] || ['🌱 Recommended crop'];
+  const wrap = document.getElementById('cropTags');
+  tags.forEach(t => {
+    wrap.innerHTML += `<span class="rtag">${t}</span>`;
+  });
+  // scroll to result
+  setTimeout(() => {
+    document.getElementById('resultBox')?.scrollIntoView({behavior:'smooth',block:'center'});
+  }, 200);
+}
+</script>
+</body>
 </html>
